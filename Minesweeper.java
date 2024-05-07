@@ -151,11 +151,20 @@ public class Minesweeper {
                     } else {
                         System.out.print("■ ");
                     }
+<<<<<<< HEAD
 
                 }
                 System.out.println();
             }
         }
 
+=======
+
+                }
+                System.out.println();
+            }
+        }
+
+>>>>>>> 9a63929cb8865f8b884b08bf42aa537fa6fc89e4
     }
 }
