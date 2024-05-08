@@ -12,11 +12,12 @@ public class Minesweeper {
         String ANSI_GREEN = "\u001B[32m";
         String ANSI_PURPLE = "\u001B[35m";
         String LOW_INTENSITY = "\u001B[2m";
+        String MAGENTA = "\u001B[35m";
 
         for (Location[] row : arr) {
             for (Location num : row) {
                 if (num.revealed == true && num.value == 8) {
-                    System.out.print("✷ ");
+                    System.out.print(MAGENTA + "✷ " + ANSI_RESET);
                 } else if (num.revealed == true && num.value == 1) {
                     System.out.print(ANSI_BLUE + "1 " + ANSI_RESET);
                 } else if (num.revealed == true && num.value == 2) {
@@ -39,6 +40,13 @@ public class Minesweeper {
     }
 
     public static void main(String[] args) {
+
+        Board game = new Board();
+
+        Location[][] g = game.createBoard();
+
+        game.printBoard(g);
+
         boolean GameComplete = false;
 
         Scanner myScan = new Scanner(System.in);
