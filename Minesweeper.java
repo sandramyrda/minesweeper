@@ -1,21 +1,52 @@
-import java.util.Arrays;
+
 import java.util.Random;
 import java.util.Scanner;
 
-import testing.Loc;
-
 public class Minesweeper {
 
-    public static void main(String[] args) {
+    // part of the board object: along with createBoard (with random bombs etc)
+    public static void printBoard(Location[][] arr) {
         String ANSI_RESET = "\u001B[0m";
         String ANSI_BLUE = "\u001B[34m";
         String ANSI_RED = "\u001B[31m";
         String ANSI_GREEN = "\u001B[32m";
         String ANSI_PURPLE = "\u001B[35m";
+        String LOW_INTENSITY = "\u001B[2m";
+
+        for (Location[] row : arr) {
+            for (Location num : row) {
+                if (num.revealed == true && num.value == 8) {
+                    System.out.print("✷ ");
+                } else if (num.revealed == true && num.value == 1) {
+                    System.out.print(ANSI_BLUE + "1 " + ANSI_RESET);
+                } else if (num.revealed == true && num.value == 2) {
+                    System.out.print(ANSI_GREEN + "2 " + ANSI_RESET);
+                } else if (num.revealed == true && num.value == 3) {
+                    System.out.print(ANSI_RED + "3 " + ANSI_RESET);
+                } else if (num.revealed == true && num.value == 4) {
+                    System.out.print(ANSI_PURPLE + "4 " + ANSI_RESET);
+                } else if (num.value == 9) {
+                    System.out.print("● ");
+                } else if (num.revealed == true) {
+                    System.out.print("■ ");
+                } else {
+                    System.out.print(LOW_INTENSITY + "■ " + ANSI_RESET);
+                }
+
+            }
+            System.out.println();
+        }
+    }
+
+    public static void main(String[] args) {
+        boolean GameComplete = false;
 
         Scanner myScan = new Scanner(System.in);
 
         Location[][] board = new Location[12][12];
+
+        System.out.println("Welcome to Minesweeper");
+        System.out.println("Let's look for some bombs");
 
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board.length; j++) {
@@ -59,38 +90,25 @@ public class Minesweeper {
                     int bombsAround = 0;
 
                     // implement: HAS TO BE A WAY TO SHORTEN THIS CODE
-                    boolean con1 = (board[i - 1][j - 1].value == 8);
-                    boolean con2 = (board[i - 1][j].value == 8);
-                    boolean con3 = (board[i - 1][j + 1].value == 8);
-                    boolean con4 = (board[i][j - 1].value == 8);
-                    boolean con5 = (board[i][j + 1].value == 8);
-                    boolean con6 = (board[i + 1][j - 1].value == 8);
-                    boolean con7 = (board[i + 1][j].value == 8);
-                    boolean con8 = (board[i + 1][j + 1].value == 8);
+                    // boolean con1 = (board[i - 1][j - 1].value == 8);
+                    // boolean con2 = (board[i - 1][j].value == 8);
+                    // boolean con3 = (board[i - 1][j + 1].value == 8);
+                    // boolean con4 = (board[i][j - 1].value == 8);
+                    // boolean con5 = (board[i][j + 1].value == 8);
+                    // boolean con6 = (board[i + 1][j - 1].value == 8);
+                    // boolean con7 = (board[i + 1][j].value == 8);
+                    // boolean con8 = (board[i + 1][j + 1].value == 8);
 
-                    if (con1) {
-                        bombsAround++;
-                    }
-                    if (con2) {
-                        bombsAround++;
-                    }
-                    if (con3) {
-                        bombsAround++;
-                    }
-                    if (con4) {
-                        bombsAround++;
-                    }
-                    if (con5) {
-                        bombsAround++;
-                    }
-                    if (con6) {
-                        bombsAround++;
-                    }
-                    if (con7) {
-                        bombsAround++;
-                    }
-                    if (con8) {
-                        bombsAround++;
+                    int[][] surr = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 }, { 1, 0 },
+                            { 1, 1 } };
+
+                    for (int[] spot : surr) {
+                        int row = i + spot[0];
+                        int col = j + spot[1];
+
+                        if (board[row][col].value == 8) {
+                            bombsAround++;
+                        }
                     }
 
                     board[i][j].value = bombsAround;
@@ -98,63 +116,25 @@ public class Minesweeper {
             }
         }
 
-        // board[4][5].revealed = true;
-
         // printing the whole board to the console depending on the values
-        for (Location[] row : board) {
-            for (Location num : row) {
-                if (num.revealed == true && num.value == 8) {
-                    System.out.print(num.value + " ");
-                } else if (num.revealed == true && num.value == 1) {
-                    System.out.print(ANSI_BLUE + "1 " + ANSI_RESET);
-                } else if (num.revealed == true && num.value == 2) {
-                    System.out.print(ANSI_GREEN + "2 " + ANSI_RESET);
-                } else if (num.revealed == true && num.value == 3) {
-                    System.out.print(ANSI_RED + "3 " + ANSI_RESET);
-                } else if (num.revealed == true && num.value == 4) {
-                    System.out.print(ANSI_PURPLE + "4 " + ANSI_RESET);
-                } else if (num.value == 9) {
-                    System.out.print("● ");
-                } else {
-                    System.out.print("■ ");
-                }
+        printBoard(board);
 
-            }
-            System.out.println();
-        }
-
-        System.out.println("Welcome to Minesweeper");
-        System.out.println("Let's look for some bombs");
-        System.out.println("Choose a location, give me two numbers (1-10) divided by space: ");
-        String loc = myScan.nextLine();
-        String[] split = loc.split(" ");
-        int x = Integer.parseInt(split[0]);
-        int y = Integer.parseInt(split[1]);
-        if (board[x][y].value == 8) {
-            System.out.println("˗ˏˋ BOOM ˎˊ˗");
-        } else {
-            board[x][y].revealed = true;
-            for (Location[] row : board) {
-                for (Location num : row) {
-                    if (num.revealed == true && num.value == 8) {
-                        System.out.print(num.value + " ");
-                    } else if (num.revealed == true && num.value == 1) {
-                        System.out.print(ANSI_BLUE + "1 " + ANSI_RESET);
-                    } else if (num.revealed == true && num.value == 2) {
-                        System.out.print(ANSI_GREEN + "2 " + ANSI_RESET);
-                    } else if (num.revealed == true && num.value == 3) {
-                        System.out.print(ANSI_RED + "3 " + ANSI_RESET);
-                    } else if (num.revealed == true && num.value == 4) {
-                        System.out.print(ANSI_PURPLE + "4 " + ANSI_RESET);
-                    } else if (num.value == 9) {
-                        System.out.print("● ");
-                    } else {
-                        System.out.print("■ ");
-                    }
-
-                }
-                System.out.println();
+        while (!GameComplete) {
+            System.out.println("Choose a location, give me two numbers (1-10) divided by space: ");
+            String loc = myScan.nextLine();
+            String[] split = loc.split(" ");
+            int x = Integer.parseInt(split[0]);
+            int y = Integer.parseInt(split[1]);
+            if (board[x][y].value == 8) {
+                GameComplete = true;
+                board[x][y].revealed = true;
+                printBoard(board);
+                System.out.println("˗ˏˋ BOOM ˎˊ˗");
+            } else {
+                board[x][y].revealed = true;
+                printBoard(board);
             }
         }
+
     }
 }
