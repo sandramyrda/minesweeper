@@ -1,8 +1,15 @@
 import java.util.Random;
 
-public class Board {
+public class Game {
+    boolean gameComplete = false;
+    String CYAN = "\u001B[36m";
+    String ANSI_RESET = "\u001B[0m";
 
-    public Board() {
+    public Game() {
+    }
+
+    public void greeting() {
+        System.out.println(CYAN + "Welcome to Minesweeper" + ANSI_RESET);
     }
 
     public Location[][] createBoard() {
@@ -14,7 +21,7 @@ public class Board {
                 board[i][j] = new Location();
             }
         }
-
+        // dropping random bombs
         Random rand = new Random();
 
         for (int i = 0; i <= 10; i++) {
@@ -23,7 +30,7 @@ public class Board {
 
             board[rand_a][rand_b].value = 8;
         }
-
+        // drawing the borders
         for (int i = 0; i < 12; i++) {
             board[0][i].value = 9;
         }
@@ -40,6 +47,7 @@ public class Board {
             board[i][11].value = 9;
         }
 
+        // counting the surrounding bombs
         for (int i = 1; i < 11; i++) {
             for (int j = 1; j < 11; j++) {
 
