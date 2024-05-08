@@ -13,7 +13,7 @@ public class Game {
     }
 
     public Location[][] createBoard() {
-        // this isn't printing anything, it's just assigning values to the Board
+        
         Location[][] board = new Location[12][12];
 
         for (int i = 0; i < board.length; i++) {
