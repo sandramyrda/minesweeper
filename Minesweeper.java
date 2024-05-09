@@ -1,67 +1,90 @@
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Minesweeper {
 
-    public static boolean isValidCell(Location[][] arr, int row, int col) {
-        return row >= 1 && row < (arr.length - 1) && col >= 1 && col < (arr[0].length - 1);
-    }
-
-    public static void revealNeighbours(Location[][] arr, int a, int b) {
-
-        int[][] surr = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1,
-                -1 }, { 1, 0 },
-                { 1, 1 } };
-
-        for (int[] spot : surr) {
-            int row = a + spot[0];
-            int col = b + spot[1];
-
-            if (isValidCell(arr, row, col) && !arr[row][col].revealed && arr[row][col].value == 0) {
-                arr[row][col].revealed = true;
-                revealNeighbours(arr, row, col);
-            } else {
-                arr[row][col].revealed = true;
-            }
-
-        }
-
-    }
-
     public static void main(String[] args) {
+        int won = 0;
+        int lost = 0;
+
+        boolean allOut = true;
+
+        Scanner myScan = new Scanner(System.in);
 
         Game game = new Game();
 
-        Location[][] g = game.createBoard();
-
         game.greeting();
+        String size = myScan.nextLine();
+        String[] sizeSplit = size.split(" ");
+        int gridInt = Integer.parseInt(sizeSplit[0]);
+        int bombInt = Integer.parseInt(sizeSplit[1]);
+
+        Location[][] g = game.createBoard(gridInt, bombInt);
 
         game.printBoard(g);
-
-        Scanner myScan = new Scanner(System.in);
 
         System.out.println("Let's look for some bombs");
 
         while (!game.gameComplete) {
+
             System.out.println("Choose a location, give me two numbers (1-10) divided by space: ");
             String loc = myScan.nextLine();
             String[] split = loc.split(" ");
             int x = Integer.parseInt(split[0]);
             int y = Integer.parseInt(split[1]);
-            if (g[x][y].value == 8) {
+            if (g[x][y].value == 10) {
+                for (Location[] bombs : g) {
+                    for (Location bomb : bombs) {
+                        if (bomb.value == 10) {
+                            bomb.revealed = true;
+                        }
+                    }
+                }
                 game.gameComplete = true;
                 g[x][y].revealed = true;
                 game.printBoard(g);
+                lost++;
                 System.out.println("˗ˏˋ BOOM ˎˊ˗");
-            } else if (g[x][y].value > 0 && g[x][y].value < 8) {
+            } else if (g[x][y].value > 0 && g[x][y].value < 9) {
                 g[x][y].revealed = true;
                 game.printBoard(g);
             } else {
 
                 g[x][y].revealed = true;
-                revealNeighbours(g, x, y);
+                Location.revealNeighbours(g, x, y);
                 game.printBoard(g);
             }
+
+            allOut = true; // this check has to happen after the game logic and after the move has been
+                           // assessed - not before that.
+
+            for (int i = 0; i < g.length; i++) {
+                for (int j = 0; j < g.length; j++) {
+                    if (g[i][j].value >= 0 && g[i][j].value < 9 && !g[i][j].revealed) {
+                        allOut = false;
+                        break;
+                    }
+                }
+            }
+
+            if (allOut) {
+                game.gameComplete = true;
+                // game.printBoard(g);
+                won++;
+                System.out.println("˗ˏˋ CONGRATULATIONS ˎˊ˗");
+            }
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("game_count.txt"))) {
+            writer.write("Wins: " + won);
+            writer.newLine();
+            writer.write("Losses: " + lost);
+            System.out.println("Counts saved.");
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
 
     }
