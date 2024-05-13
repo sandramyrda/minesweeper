@@ -1,13 +1,21 @@
 import java.util.Random;
-import java.util.Scanner;
 
 public class Game {
+
+    // if (game.allOut) -> inside the handleTurn function
+    // if gamecomplete can be outside the while loop
+
+    // class GameState or const = {object with values}
+
+    // handleTurn method - has access to all the state so getAllOut should be done
+    // through that function
+
     private boolean gameComplete = false;
     private boolean allOut = true;
     public Location[][] g;
+    public HistoryWriter historian = new HistoryWriter();
     int[][] surr = { { -1, -1 }, { -1, 0 }, { -1, 1 }, { 0, -1 }, { 0, 1 }, { 1, -1 }, { 1, 0 }, { 1, 1 } };
 
-    String CYAN = "\u001B[36m";
     String ANSI_RESET = "\u001B[0m";
     String ANSI_BLUE = "\u001B[34m";
     String ANSI_RED = "\u001B[31m";
@@ -43,37 +51,25 @@ public class Game {
         this.gameComplete = val;
     }
 
-    public void greeting() {
-        System.out.println(CYAN + "Welcome to Minesweeper" + ANSI_RESET);
-        // System.out
-        // .println("Choose the size of the grid and the number of bombs by typing two
-        // numbers divided by space:");
-    }
-
-    public void resetBoard(Game game, Scanner myScan) {
+    public void resetBoard(int gridInt, int bombInt) {
         setGameComplete(false);
-        System.out
-                .println("Choose the size of the grid and the number of bombs by typing two numbers divided by space:");
-        String[] scannedSize = game.handleScan(myScan);
-        int gridInt = Integer.parseInt(scannedSize[0]);
-        int bombInt = Integer.parseInt(scannedSize[1]);
 
-        Location[][] g = game.createBoard(gridInt, bombInt);
+        this.g = createBoard(gridInt, bombInt);
 
-        game.setG(g);
-
-        game.printBoard(g);
+        printBoard();
 
         System.out.println("Let's look for some bombs");
     }
 
     public Location[][] createBoard(int grid, int bombs) {
 
-        Location[][] board = new Location[grid + 2][grid + 2];
+        // Location[][] board = new Location[grid + 2][grid + 2];
 
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board.length; j++) {
-                board[i][j] = new Location();
+        this.g = new Location[grid + 2][grid + 2];
+
+        for (int i = 0; i < g.length; i++) {
+            for (int j = 0; j < g.length; j++) {
+                g[i][j] = new Location();
             }
         }
         // dropping random bombs
@@ -83,30 +79,30 @@ public class Game {
             int rand_a = rand.nextInt(grid - 1) + 1;
             int rand_b = rand.nextInt(grid - 1) + 1;
 
-            board[rand_a][rand_b].value = 10;
+            g[rand_a][rand_b].value = 10;
         }
         // drawing the borders
         for (int i = 0; i < (grid + 2); i++) {
-            board[0][i].value = 9;
+            g[0][i].value = 9;
         }
 
         for (int i = 0; i < (grid + 2); i++) {
-            board[grid + 1][i].value = 9;
+            g[grid + 1][i].value = 9;
         }
 
         for (int i = 0; i < (grid + 2); i++) {
-            board[i][0].value = 9;
+            g[i][0].value = 9;
         }
 
         for (int i = 0; i < (grid + 2); i++) {
-            board[i][grid + 1].value = 9;
+            g[i][grid + 1].value = 9;
         }
 
         // counting the surrounding bombs
         for (int i = 1; i < (grid + 1); i++) {
             for (int j = 1; j < (grid + 1); j++) {
 
-                if (board[i][j].value != 10) {
+                if (g[i][j].value != 10) {
 
                     int bombsAround = 0;
 
@@ -114,22 +110,22 @@ public class Game {
                         int row = i + spot[0];
                         int col = j + spot[1];
 
-                        if (board[row][col].value == 10) {
+                        if (g[row][col].value == 10) {
                             bombsAround++;
                         }
                     }
 
-                    board[i][j].value = bombsAround;
+                    g[i][j].value = bombsAround;
                 }
             }
         }
 
-        return board;
+        return g;
     }
 
-    public void printBoard(Location[][] board) {
+    public void printBoard() {
 
-        for (Location[] row : board) {
+        for (Location[] row : g) {
             for (Location num : row) {
                 if (num.revealed == true && num.value == 10) {
                     System.out.print(MAGENTA + "✷ " + ANSI_RESET);
@@ -155,28 +151,24 @@ public class Game {
         }
     }
 
-    public boolean isValidCell(Location[][] arr, int row, int col) {
-        return row >= 1 && row < (arr.length - 1) && col >= 1 && col < (arr[0].length - 1);
-    }
-
-    public void revealNeighbours(Location[][] arr, int a, int b) {
+    public void revealNeighbours(int a, int b) {
 
         for (int[] spot : surr) {
             int row = a + spot[0];
             int col = b + spot[1];
 
-            if (isValidCell(arr, row, col) && !arr[row][col].revealed && arr[row][col].value == 0) {
-                arr[row][col].revealed = true;
-                revealNeighbours(arr, row, col);
+            if (GameUtils.isValidCell(g, row, col) && !g[row][col].revealed && g[row][col].value == 0) {
+                g[row][col].revealed = true;
+                revealNeighbours(row, col);
             } else {
-                arr[row][col].revealed = true;
+                g[row][col].revealed = true;
             }
 
         }
 
     }
 
-    public void handleTurn(int x, int y, Location[][] g, Game game) {
+    public void handleTurn(int x, int y) {
         if (g[x][y].value == 10) {
             for (Location[] bombs : g) {
                 for (Location bomb : bombs) {
@@ -185,32 +177,27 @@ public class Game {
                     }
                 }
             }
-            game.setGameComplete(true);
+            this.gameComplete = true;
             g[x][y].revealed = true;
 
         } else if (g[x][y].value > 0 && g[x][y].value < 9) {
             g[x][y].revealed = true;
-            game.printBoard(g);
+            printBoard();
         } else {
 
             g[x][y].revealed = true;
-            revealNeighbours(g, x, y);
-            game.printBoard(g);
+            revealNeighbours(x, y);
+            printBoard();
         }
+
     }
 
-    public String[] handleScan(Scanner scan) {
-        String size = scan.nextLine();
-        String[] sizeSplit = size.split(" ");
-        return sizeSplit;
-    }
-
-    public void checkAllOut(Location[][] g, Game game) {
-        game.setAllOut(true);
+    public void checkAllOut() {
+        this.allOut = true;
         for (int i = 0; i < g.length; i++) {
             for (int j = 0; j < g.length; j++) {
                 if (g[i][j].value >= 0 && g[i][j].value < 9 && !g[i][j].revealed) {
-                    game.setAllOut(false);
+                    this.allOut = false;
                     break;
                 }
             }
